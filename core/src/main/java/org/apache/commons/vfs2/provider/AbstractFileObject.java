@@ -158,8 +158,16 @@ public abstract class AbstractFileObject<AFS extends AbstractFileSystem> impleme
      * Allow subclasses to attach the file object without allowing subclasses to override the implementation of the
      * {@link #attach()} method.
      */
-    protected void performAttach() throws Exception {
+    protected void performAttach() throws FileSystemException {
         attach();
+    }
+
+    protected void setAttached() {
+        synchronized (fs) {
+            if (!attached) {
+                attached = true;
+            }
+        }
     }
 
     /**
@@ -569,8 +577,14 @@ public abstract class AbstractFileObject<AFS extends AbstractFileSystem> impleme
      * Allow subclasses to detach the file object without allowing subclasses to override the implementation of the
      * {@link #detach()} method.
      */
-    protected void performDetach() throws Exception {
-        detach();
+    protected void performDetach() throws FileSystemException {
+        try {
+            detach();
+        } catch (FileSystemException fse) {
+            throw fse;
+        } catch (Exception e) {
+            throw new FileSystemException(e);
+        }
     }
 
     /**
